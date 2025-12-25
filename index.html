@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemüse-Küche v2.3.4</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #0a0f14;
+            color: #b0c4de; 
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .chronik-card {
+            background: linear-gradient(145deg, #0f172a, #070a0f);
+            border: 1px solid #1e293b;
+            border-left: 3px solid #38bdf8;
+        }
+        /* Custom Pull-Down Design */
+        .select-wrapper {
+            position: relative;
+        }
+        .select-wrapper::after {
+            content: '▼';
+            font-size: 0.8rem;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            position: absolute;
+            pointer-events: none;
+            color: #38bdf8;
+        }
+        select {
+            background-color: #1e293b;
+            color: #ffffff;
+            border: 1px solid #334155;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+        .nav-btn {
+            background-color: #1e293b;
+            color: #38bdf8;
+            border: 1px solid #334155;
+            transition: all 0.2s;
+        }
+        .nav-btn:active {
+            background-color: #38bdf8;
+            color: #0a0f14;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <header class="text-center mb-10">
+        <h1 class="text-3xl font-light tracking-widest text-white uppercase italic">Einfache Gemüsegerichte</h1>
+        <p class="text-[10px] text-sky-500 mt-1 font-mono uppercase tracking-[0.3em]">Version 2.3.4</p>
+    </header>
+
+    <div class="max-w-xl mx-auto w-full">
+        <p class="text-center text-xs text-slate-500 mb-2 uppercase tracking-widest italic">Wähle ein Gericht deiner Wahl aus</p>
+        
+        <div class="select-wrapper mb-8">
+            <select id="recipe-select" class="w-full p-4 rounded-none cursor-pointer shadow-lg outline-none focus:border-sky-500">
+                <option value="">-- Dokumentation öffnen --</option>
+            </select>
+        </div>
+
+        <main id="recipe-display" class="hidden">
+            <div class="chronik-card p-8 mb-6 shadow-2xl">
+                <h2 id="recipe-title" class="text-2xl font-bold text-white mb-6 border-b border-slate-800 pb-2"></h2>
+                <p id="recipe-content" class="text-xl leading-relaxed mb-10 text-slate-200"></p>
+                
+                <div class="flex gap-4">
+                    <button onclick="changeRecipe(-1)" class="nav-btn flex-1 py-4 uppercase text-xs font-bold tracking-[0.2em]">⬅ Zurück</button>
+                    <button onclick="changeRecipe(1)" class="nav-btn flex-1 py-4 uppercase text-xs font-bold tracking-[0.2em]">Vor ➡</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer class="py-6 text-center mt-auto">
+        <p class="text-[10px] text-slate-600 uppercase tracking-[0.2em]">(c) Lern-App für die Zubereitung einfacher Gemüsegerichte</p>
+        <p class="text-[10px] text-slate-600 uppercase tracking-[0.2em]">Exklusiv für Simone R.</p>
+    </footer>
+
+    <script>
+        const rezepteRoh = [
+            { title: "Auberginen Würfel", text: "Aubergine würfeln, salzen, Wasser abtupfen und mit Thymian weich braten." },
+            { title: "Blumenkohl Steaks", text: "Blumenkohl in dicke Scheiben schneiden, goldbraun braten und kräftig würzen." },
+            { title: "Blattspinat mit Knoblauch", text: "Spinat in der Pfanne zusammenfallen lassen, Knoblauch und Muskat zugeben." },
+            { title: "Blitz-Zucchini Pfanne", text: "Zucchini würfeln, scharf anbraten, mit Salz, Pfeffer und Zitrone abschmecken." },
+            { title: "Erbsen mit Minze", text: "Tiefkühl-Erbsen in Butter schwenken und frische Minze unterrühren." },
+            { title: "Fenchel mit Orange", text: "Fenchelscheiben braten und mit einem Spritzer Orangensaft ablöschen." },
+            { title: "Gebratene Champignons", text: "Pilze ohne Fett anbräunen, dann Öl, Zwiebeln und Salz zugeben." },
+            { title: "Gedünsteter Brokkoli", text: "Röschen 5 Minuten in wenig Salzwasser garen. Mit Butter und Zitrone verfeinern." },
+            { title: "Gurkensalat warm", text: "Gurkenscheiben kurz mit Dill und Essig dünsten – eine warme Beilage." },
+            { title: "Kohlrabi Pommes", text: "Kohlrabi in Stifte schneiden, mit Öl und Paprika mischen und im Ofen rösten." },
+            { title: "Kohl-Pfanne", text: "Wirsing oder Spitzkohl fein schneiden und mit etwas Kümmel scharf anbraten." },
+            { title: "Kürbis Spalten", text: "Hokkaido mit Schale in Spalten schneiden und 20 Minuten im Ofen garen." },
+            { title: "Lauch in Sahne", text: "Lauchringe in Butter dünsten, mit einem Schluck Sahne einkochen lassen." },
+            { title: "Maiskolben Grill-Stil", text: "Maiskolben kochen, dann in der Pfanne mit Butter rundherum anbräunen." },
+            { title: "Möhren mit Honig", text: "Möhrenstifte garen, Wasser abgießen, mit Honig und Butter glasieren." },
+            { title: "Ofengemüse Klassik", text: "Gemüse nach Wahl schneiden, mit Olivenöl und Rosmarin mischen. Bei 200 Grad backen." },
+            { title: "Paprika Express", text: "Paprikastreifen 5 Minuten in Kräuteröl dünsten, bis sie bissfest sind." },
+            { title: "Radieschen warm", text: "Radieschen halbieren und kurz in Butter dünsten, bis sie mild werden." },
+            { title: "Spargel Pfanne", text: "Grünen Spargel im unteren Drittel schälen und 8 Minuten in Butter braten." },
+            { title: "Tomaten Bohnen Topf", text: "Gekochte Bohnen mit Cherrytomaten kurz in Olivenöl schwenken." }
+        ];
+
+        // Alphabetisch sortiert
+        const archiv = rezepteRoh.sort((a, b) => a.title.localeCompare(b.title));
+
+        const select = document.getElementById('recipe-select');
+        const display = document.getElementById('recipe-display');
+        const titleOut = document.getElementById('recipe-title');
+        const contentOut = document.getElementById('recipe-content');
+
+        archiv.forEach((r, i) => {
+            const opt = document.createElement('option');
+            opt.value = i;
+            opt.innerText = r.title;
+            select.appendChild(opt);
+        });
+
+        function showRecipe(index) {
+            if (index < 0) index = archiv.length - 1;
+            if (index >= archiv.length) index = 0;
+            
+            select.value = index;
+            const recipe = archiv[index];
+            titleOut.innerText = recipe.title;
+            contentOut.innerText = recipe.text;
+            display.classList.remove('hidden');
+            
+            // Auto-Vorlesen
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(recipe.text);
+            utterance.lang = 'de-DE';
+            window.speechSynthesis.speak(utterance);
+        }
+
+        select.addEventListener('change', (e) => {
+            if(e.target.value !== "") showRecipe(parseInt(e.target.value));
+        });
+
+        function changeRecipe(direction) {
+            let current = select.value === "" ? -1 : parseInt(select.value);
+            showRecipe(current + direction);
+        }
+    </script>
+</body>
+</html>
+
